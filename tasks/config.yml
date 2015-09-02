@@ -1,0 +1,82 @@
+---
+# Copyright 2015, Yongxin Solutions
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Author: George Li
+#
+# tasks file for datadatabase-mariadb10
+
+- name: stop services
+  service:
+    name: "{{ service_name }}"
+    state: stopped
+
+- name: File and directory setup - etc-mysql-my.cnf
+  template:
+    src: etc-mysql-my.cnf.j2
+    dest: /etc/mysql/my.cnf
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: File and directory setup - mariadb.conf.d
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  with_items: 
+    - "{{ mariadb_confd_dir }}"
+
+- name: File and directory setup - mariadb-confd-mysqld.cnf
+  template:
+    src: "{{ item.name }}"
+    dest: "{{ mariadb_confd_dir }}/{{ item.dest }}"
+    owner: root
+    group: root
+    mode: "0644"
+  with_items:
+    - { name: 'mariadb-confd-client.cnf.j2', dest: 'client.cnf' }
+    - { name: 'mariadb-confd-mysql_safe.cnf.j2', dest: 'mysql_safe.cnf' }
+    - { name: 'mariadb-confd-mysqld.cnf.j2', dest: 'mysqld.cnf' }
+
+- name: create new data directory if default data directory is not use
+  command: "{{ mariadb_install_db_bin }} --basedir={{ mariadb_base_dir }} --datadir={{ mariadb_data_dir }} --user={{ mariadb_user }}"
+  when: mariadb_data_dir != '/var/lib/mysql'
+
+- name: remove default data directory in case if new location in use
+  file:
+    path: "/var/lib/mysql"
+    state: absent
+  when: mariadb_data_dir != "/var/lib/mysql"
+
+- name: start services
+  service:
+    name: "{{ service_name }}"
+    state: started
+  register: service_started
+
+- name: File and directory setup - secure mysql database
+  template:
+    src: 'secure_mysql_init.sql.j2'
+    dest: '/tmp/secure_mysql_init.sql'
+    owner: root
+    group: root
+    mode: "0644"
+  when: install_package|changed
+
+- name: secure mysql database
+  shell: mysql mysql < /tmp/secure_mysql_init.sql
+  when: install_package|changed

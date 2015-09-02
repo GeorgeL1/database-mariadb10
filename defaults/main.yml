@@ -1,0 +1,46 @@
+---
+# Copyright 2015, Yongxin Solutions
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Author: George Li
+#
+# defaults file for datadatabase-mariadb10
+
+# default variables
+default_root_dir: "/yongxin"
+service_name: "mysql"
+
+# apt repository
+repo_apt_key: "0xcbcb082a1bb943db"
+repo_apt_url: "mariadb.uberglobalmirror.com"
+repo_apt_source: "deb http://{{ repo_apt_url }}/repo/10.0/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} main"
+repo_apt_packages:
+  - mariadb-server
+  - python-mysqldb
+
+mariadb_base_dir: "/usr"
+mariadb_bind_address: "127.0.0.1"
+mariadb_charsets_dir: "/usr/share/mysql/charsets"
+mariadb_confd_dir: "{{ default_root_dir }}/share/conf/mariadb.conf.d"
+mariadb_data_dir: "{{ default_root_dir }}/share/mysql"
+mariadb_install_db_bin: "/usr/bin/mysql_install_db"
+mariadb_pidfile: "/var/run/mysqld/mysql.pid"
+mariadb_port: 3306
+mariadb_query_cache_limit: "128K"
+mariadb_query_cache_size: "64M"
+mariadb_root_password: "secret2015"
+mariadb_skip_networking: false
+mariadb_socket: "/var/run/mysqld/mysqld.sock"
+mariadb_user: "mysql"
+

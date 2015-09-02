@@ -1,0 +1,58 @@
+---
+# Copyright 2015, Yongxin Solutions
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Author: George Li
+#
+# tasks file for datadatabase-mariadb10
+
+- name: add apt key
+  apt_key: 
+    keyserver: "hkp://keyserver.ubuntu.com:80"
+    id: "{{ repo_apt_key }}"
+  register: apt_update
+  until: apt_update|success
+  retries: 3
+  delay: 2
+  tags:
+    - repo-apt-packages
+
+# This give packages from the mariadb repository a higher priority
+# It has happened before that mariadb keeps mysql libraries backs
+- name: update apt preferences
+  template:
+    src: 50_mariadb.j2
+    dest: /etc/apt/preferences.d/50_mariadb
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: add apt repository source
+  apt_repository:
+    repo: "{{ repo_apt_source }}"
+    state: present
+  tags:
+    - repo-apt-packages
+
+- name: install apt packages
+  apt:
+    pkg: "{{ item }}"
+    state: present
+  register: install_package
+  until: install_package|success
+  retries: 3
+  delay: 2
+  with_items: repo_apt_packages
+  tags:
+    - repo-apt-packages
