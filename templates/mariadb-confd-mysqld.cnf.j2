@@ -1,0 +1,63 @@
+# The MariaDB configuration file
+#
+[mysqld]
+basedir                   = {{ mariadb_base_dir }}
+datadir                   = {{ mariadb_data_dir }}
+character-set-filesystem  = binary
+character-set-server      = utf8
+collation-server          = utf8_general_ci
+default-storage-engine    = InnoDB
+key-buffer                = 64M
+lc-messages               = en_US
+lc-messages-dir           = /usr/share/mysql
+log_error                 = /var/log/error.log
+log_warnings              = 2
+long-query-time           = 10
+max-allowed-packet        = 1M
+myisam-sort-buffer        = 8M
+net-buffer-length         = 16K
+pid-file                  = {{ mariadb_pidfile }}
+port                      = 3306
+query_cache_limit         = {{ mariadb_query_cache_limit }}
+query_cache_size          = {{ mariadb_query_cache_size }}
+read-buffer               = 256K
+read-rnd-buffer           = 512K
+server-id                 = 1
+skip-external-locking
+socket                    = {{ mariadb_socket }}
+sort-buffer               = 8M
+table-open-cache          = 64
+thread-cache-size         = 128
+tmpdir                    = /tmp
+user                      = {{ mariadb_user }}
+
+# * InnoDB
+innodb-buffer-pool-size         = 64M
+innodb-data-file-path           = ibdata1:10M:autoextend:max:128M
+innodb-file-per-table           = 1
+innodb-flush-log-at-trx-commit  = 1
+innodb-lock-wait-timeout        = 50
+innodb-log-buffer               = 8M
+innodb-log-file-size            = 5M
+innodb-log-files-in-group       = 2
+innodb-open-files               = 400
+innodb-io-capacity              = 400
+innodb-flush-method             = O_DIRECT
+
+{% if mariadb_skip_networking|default(False) %}
+skip-networking
+{% elif mariadb_bind_address|default(False) %}
+bind-address                    = {{ mariadb_bind_address }}
+{% endif %}
+
+[isamchk]
+key-buffer                      = 32M
+read-buffer                     = 2M
+sort-buffer                     = 32M
+write-buffer                    = 2M
+
+[myisamchk]
+key-buffer                      = 32M
+read-buffer                     = 2M
+sort-buffer                     = 32M
+write-buffer                    = 2M
